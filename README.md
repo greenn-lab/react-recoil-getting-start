@@ -1,70 +1,95 @@
 # Getting Started with Create React App
+간단하게 [recoil](https://recoiljs.org/docs/introduction/getting-started/) 을 해봐요.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+```shell
+npx create-react-app react-recoil-getting-start
+cd react-recoil-getting-start
+```
+프로젝트를 간단하게 생성하고,
+```shell
+pnpm add recoil
+```
+요즘 `pnpm` 이 제일 빠른것 같아서 그냥 습관적으로 쓰는 패키지 매니저에요.
 
-## Available Scripts
+## RecoilRoot
+리코일 상태를 사용하기 위해서는 `<RecoilRoot />` 이 상위 트리 어딘가에 있어야 하네요. 좋은 자리는 최상위 컴포넌트 고요.
+```js
+import React from 'react';
+import {
+  RecoilRoot,
+  atom,
+  selector,
+  useRecoilState,
+  useRecoilValue,
+} from 'recoil';
 
-In the project directory, you can run:
+function App() {
+  return (
+    <RecoilRoot>
+      <CharacterCounter />
+    </RecoilRoot>
+  );
+}
+```
+`<CharacterCounter />` 는 나중에 구현하게 될거래요.
 
-### `npm start`
+## atom
+`상태(state)`를 나타내고, 어느 컴포넌트에서든 읽고 쓰기가 가능하대요. 값을 읽은 컴포넌트는 암묵적으로 구독이 되어서 값이 변할 때, 컴포넌트가 다시 랜더링 되고요.
+```js
+const textState = atom({
+  key: 'textState', // unique ID (with respect to other atoms/selectors)
+  default: '', // default value (aka initial value)
+});
+```
+위 정의된 atom 을 읽을 때는, `useRecoilState()` 를 쓰는데,
+```js
+function CharacterCounter() {
+  return (
+    <div>
+      <TextInput />
+      <CharacterCount />
+    </div>
+  );
+}
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+function TextInput() {
+  const [text, setText] = useRecoilState(textState); // 🔥
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+  const onChange = (event) => {
+    setText(event.target.value);
+  };
 
-### `npm test`
+  return (
+    <div>
+      <input type="text" value={text} onChange={onChange} />
+      <br />
+      Echo: {text}
+    </div>
+  );
+}
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Selector
+`파생된 상태(derived state)`를 정의하는데 쓰이는데, 상태를 순수함수로 변경된 값을 준다는 거에요. vue 의 `computed()` 와 같은건데...
+```js
+const charCountState = selector({
+  key: 'charCountState', // unique ID (with respect to other atoms/selectors)
+  get: ({get}) => {
+    const text = get(textState);
 
-### `npm run build`
+    return text.length;
+  },
+});
+```
+이건 상태랑 달라서 `useRecoilValue()` 를 통해서 읽어요.
+```js
+function CharacterCount() {
+  const count = useRecoilValue(charCountState);
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  return <>Character Count: {count}</>;
+}
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+나머지는 코드로 보시죠.  
+커밋 히스토리 또는 브렌치로 단계별 진행을 해볼게요.
