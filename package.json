@@ -12,6 +12,9 @@
     "recoil": "0.7.3-alpha.2",
     "web-vitals": "^2.1.4"
   },
+  "devDependencies": {
+    "electron": "^19.0.1"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
